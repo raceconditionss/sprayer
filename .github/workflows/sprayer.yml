@@ -1,4 +1,4 @@
-name: Sprayer
+name: Sprayer com Thermoptic Proxy
 
 on:
   workflow_dispatch:
@@ -6,36 +6,48 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v2
-
+      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-
+      
       - name: Install dependencies
         run: python3 -m pip install -r requirements.txt
-
-      - name: Start Local Proxy Service (Docker Compose)
-        # O Docker e o Docker Compose já vêm pré-instalados nos runners do GitHub,
-        # então removemos todos os comandos de 'sudo apt install'.
-        # Usamos a flag -d (--detach) para rodar o serviço em background.
-        run: git clone https://github.com/mandatoryprogrammer/thermoptic; cd thermoptic
+      
+      - name: Clone and Start Thermoptic Proxy
         run: |
+          echo "[*] Clonando Thermoptic..."
+          git clone https://github.com/mandatoryprogrammer/thermoptic
+          cd thermoptic
+          
+          echo "[*] Iniciando proxy via Docker Compose..."
           docker compose up --build -d
-          # Opcional: dê um pequeno tempo para o proxy iniciar
-          echo "Waiting for proxy service to start..."
+          
+          echo "[*] Aguardando proxy inicializar..."
           sleep 15
-
-      # O proxy estará disponível em 127.0.0.1 (ou localhost) na porta definida no seu docker-compose.yml.
-      - name: Run Sprayer Script using Local Proxy
-        run: python sprayer.py
+          
+          echo "[+] Proxy Thermoptic iniciado"
+          docker compose ps
+      
+      - name: Run Sprayer
+        run: python3 sprayer.py
         env:
-          # Variáveis para o Sprayer: O Sprayer (sprayer.py) deve ser codificado para
-          # ler e usar essas variáveis de ambiente para rotear o tráfego de saída.
-          HTTP_PROXY: http://changeme:changeme@127.0.0.1:1234
           USERNAMES: ${{ secrets.USERNAMES }}
           PASSWORD: ${{ secrets.PASSWORD }}
           CATCHERURL: ${{ secrets.CATCHERURL }}
           CATCHERTLS: ${{ secrets.CATCHERTLS }}
+          HTTP_PROXY: "http://changeme:changeme@127.0.0.1:1234"
+          HTTPS_PROXY: "http://changeme:changeme@127.0.0.1:1234"
+          INSTANCE_ID: ${{ github.run_id }}
+      
+      - name: Stop Thermoptic Proxy
+        if: always()
+        run: |
+          cd thermoptic
+          echo "[*] Parando proxy Thermoptic..."
+          docker compose down
+          echo "[+] Proxy parado"
