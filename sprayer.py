@@ -1,70 +1,98 @@
-# esse ta mandando um get e pegando a response
 import requests
 import os
 from urllib3.exceptions import InsecureRequestWarning
 
-required_env_vars = ["USERNAMES", "PASSWORD", "CATCHERURL", "CATCHERTLS"]
-missing_env_vars = [var for var in required_env_vars if os.getenv(var) is None]
+# Disable SSL warnings
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+# Validate required environment variables
+required_env_vars = ["CATCHERURL", "CATCHERTLS"]
+missing_env_vars = [var for var in required_env_vars if os.getenv(var) is None]
 if missing_env_vars:
     missing_vars_str = ", ".join(missing_env_vars)
     raise ValueError(f"Missing environment variables: {missing_vars_str}")
 
-# TODO: add target and other data here later to make this more modular
 # Fetch environment variables
-usernames = os.getenv("USERNAMES").split(',')
-password = os.getenv("PASSWORD")
 catcher_URL = os.getenv("CATCHERURL")
-catcher_uses_TLS_str = os.getenv("CATCHERTLS")
-# Convert catcher_uses_TLS_str to boolean
-catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
+catcher_uses_TLS = os.getenv("CATCHERTLS").lower() == "true"
+instance_id = os.getenv("INSTANCE_ID", "1")
 
-def send_login_request(username, password):
+# Configure proxy
+proxy_url = "http://changeme:changeme@127.0.0.1:1234"
+proxies = {
+    "http": proxy_url,
+    "https": proxy_url,
+}
+
+print(f"[*] Instance ID: {instance_id}")
+print(f"[*] Using proxy: {proxy_url}")
+
+def send_request():
+    """Send a single GET request through the proxy"""
     url = "https://ja4db.com/id/ja4/"
-    post_headers = {
+    headers = {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     }
-
+    
     try:
+        print(f"[*] Sending request to {url}")
         response = requests.get(
             url,
-            headers=post_headers,
-            proxies={"http": "http://changeme:changeme@127.0.0.1:1234"},
-            timeout=5,
+            headers=headers,
+            proxies=proxies,
+            verify=False,
+            timeout=30,
         )
-        return response.status_code, response.text
-
-    except requests.RequestException:
-        return None, None
-
-def send_data_to_catcher(data, use_ssl):
-    if not use_ssl:
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    try:
-        response = requests.get(catcher_URL, timeout=3, verify=use_ssl)
-        print("[+] Data sent to the catcher.")
-    except requests.RequestException:
-        print(f"[-] Failed to send data to the catcher.")
         
-# Initialize an empty list to store results
-results = []
+        print(f"[+] Response received: {response.status_code}")
+        return response
+        
+    except requests.RequestException as e:
+        print(f"[-] Request failed: {str(e)}")
+        return None
 
-# Iterate over each username and perform login request
-for username in usernames:
-    login_response_code, login_response = send_login_request(username, password)
-    result = {
-        "username": username,
-        "password": password,
-    }
-    if login_response_code is not None and login_response is not None:
-        result["status_code"] = login_response_code
-        result["response"] = login_response
-    else:
-        result["status_code"] = 500
-        result["response"] = "Github actions workflow failed to perform login request"
-    results.append(result)
+def send_data_to_catcher(data):
+    """Send data to the catcher via GET request"""
+    try:
+        print(f"[*] Fetching logs from catcher: {catcher_URL}")
+        response = requests.get(
+            catcher_URL,
+            timeout=10,
+            verify=catcher_uses_TLS
+        )
+        print(f"[+] Catcher response received")
+        print(response.text)
+        
+    except requests.RequestException as e:
+        print(f"[-] Failed to fetch from catcher: {str(e)}")
 
-# Send all results to the catcher
-send_data_to_catcher(results, use_ssl=catcher_uses_TLS)
+# Send the request
+response = send_request()
+
+result = {
+    "instance_id": instance_id,
+}
+
+if response is not None:
+    result["status_code"] = response.status_code
+    result["response_body"] = response.text
+    result["response_headers"] = dict(response.headers)
+    result["url"] = response.url
+    result["elapsed_time"] = str(response.elapsed)
+    
+    # Try to parse JSON if possible
+    try:
+        result["response_json"] = response.json()
+    except:
+        result["response_json"] = None
+else:
+    result["status_code"] = 500
+    result["response_body"] = "Request failed"
+    result["response_headers"] = {}
+
+# Fetch logs from catcher
+print(f"\n[*] Fetching logs from catcher...")
+send_data_to_catcher(result)
+print("[*] Script completed!")
