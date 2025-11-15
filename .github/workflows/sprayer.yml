@@ -21,6 +21,7 @@ jobs:
         # O Docker e o Docker Compose já vêm pré-instalados nos runners do GitHub,
         # então removemos todos os comandos de 'sudo apt install'.
         # Usamos a flag -d (--detach) para rodar o serviço em background.
+        run: git clone https://github.com/mandatoryprogrammer/thermoptic; cd thermoptic
         run: |
           docker compose up --build -d
           # Opcional: dê um pequeno tempo para o proxy iniciar
