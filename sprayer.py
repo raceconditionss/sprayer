@@ -17,15 +17,9 @@ catcher_URL = os.getenv("CATCHERURL")
 catcher_uses_TLS = os.getenv("CATCHERTLS").lower() == "true"
 instance_id = os.getenv("INSTANCE_ID", "1")
 
-# Configure proxy
-proxy_url = "http://changeme:changeme@127.0.0.1:1234"
-proxies = {
-    "http": proxy_url,
-    "https": proxy_url,
-}
+# Configure prox
 
 print(f"[*] Instance ID: {instance_id}")
-print(f"[*] Using proxy: {proxy_url}")
 
 def send_request():
     """Send a single GET request through the proxy"""
@@ -41,7 +35,7 @@ def send_request():
         response = requests.get(
             url,
             headers=headers,
-            proxies=proxies,
+            proxies = {"http": "http://changeme:changeme@127.0.0.1:1234"},
             verify=False,
             timeout=30,
         )
