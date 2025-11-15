@@ -1,4 +1,4 @@
-name: Sprayer w/ Fingerprint Spoofing + IP Rotation
+name: Sprayer
 
 on:
   workflow_dispatch:
