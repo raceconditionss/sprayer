@@ -1,4 +1,4 @@
-name: Sprayer
+name: Sprayer w/ Fingerprint Spoofing
 
 on:
   workflow_dispatch:
