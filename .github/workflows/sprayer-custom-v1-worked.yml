@@ -21,7 +21,7 @@ jobs:
       - name: Clone and Start Thermoptic Proxy
         run: |
           echo "[*] Clonando Thermoptic..."
-          git clone https://github.com/raceconditionss/thermoptic-working
+          git clone https://github.com/mandatoryprogrammer/thermoptic.git
           cd thermoptic-working
           git checkout 50567634e30154dd73d759d923c655c8669ab75e
           
