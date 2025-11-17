@@ -21,8 +21,8 @@ jobs:
       - name: Clone and Start Thermoptic Proxy
         run: |
           echo "[*] Clonando Thermoptic..."
-          git clone https://github.com/mandatoryprogrammer/thermoptic
-          cd thermoptic
+          git clone https://github.com/raceconditionss/thermoptic-working
+          cd thermoptic-working
           
           echo "[*] Iniciando proxy via Docker Compose..."
           docker compose up --build -d
