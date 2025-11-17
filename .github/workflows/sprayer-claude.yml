@@ -1,4 +1,4 @@
-name: Sprayer com Proxy
+name: Sprayer 
 
 on:
   workflow_dispatch:
