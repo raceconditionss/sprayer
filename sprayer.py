@@ -17,7 +17,7 @@ catcher_uses_TLS_str = os.getenv("CATCHERTLS")
 catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
 
 def send_login_request():
-    url = "http://18.234.239.10/test/"
+    url = "http://18.234.239.10:1234/test/"
     post_headers = {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
