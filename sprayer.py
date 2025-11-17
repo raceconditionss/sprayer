@@ -1,3 +1,4 @@
+# default sprayer but using proxcy
 import requests
 import os
 from urllib3.exceptions import InsecureRequestWarning
