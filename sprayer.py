@@ -18,8 +18,8 @@ catcher_uses_TLS_str = os.getenv("CATCHERTLS")
 catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
 
 def send_login_request():
-    # worked - url = "https://tls.peet.ws/api/all"
-    url = "https://cloudflare.manfredi.io/test/"
+    url = "https://tls.peet.ws/api/all"
+    #url = "https://cloudflare.manfredi.io/test/"
 
     try:
         response = requests.get(
