@@ -19,7 +19,6 @@ catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
 
 def send_login_request():
     url = "https://tls.peet.ws/api/all"
-    #url = "https://cloudflare.manfredi.io/test/"
 
     try:
         response = requests.get(
@@ -49,7 +48,6 @@ def send_data_to_catcher(data, use_ssl):
 # Initialize an empty list to store results
 results = []
 
-# CORREÇÃO: Inicializa o dicionário 'result' antes de usá-lo
 result = {}
 
 # Perform the login request
