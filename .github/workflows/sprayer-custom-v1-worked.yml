@@ -30,6 +30,12 @@ jobs:
           
           echo "[+] Proxy Thermoptic iniciado"
           docker compose ps
+
+          sleep 15
+
+          curl --proxy http://127.0.0.1:1234 https://ja4db.com/id/ja4h/ || echo "curl ja4 failed"
+
+          curl  https://ja4db.com/id/ja4h/ || echo "curl ja4 failed"
       
       - name: Run Sprayer
         run: python3 sprayer.py
