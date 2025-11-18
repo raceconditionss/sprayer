@@ -33,7 +33,7 @@ jobs:
           sleep 5
       
       - name: Run Sprayer
-        run: python3 sprayer.py
+        run: python3 sprayer/sprayer-verify-data.py
         env:
           USERNAMES: ${{ secrets.USERNAMES }}
           PASSWORD: ${{ secrets.PASSWORD }}
