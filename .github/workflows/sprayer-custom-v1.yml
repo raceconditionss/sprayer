@@ -27,6 +27,8 @@ jobs:
           
           echo "[*] Iniciando proxy via Docker Compose..."
           docker compose up --build -d
+
+          sleep 20
           
           echo "[+] Proxy Thermoptic iniciado"
           docker compose ps
