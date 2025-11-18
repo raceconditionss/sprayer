@@ -17,8 +17,8 @@ usernames = os.getenv("USERNAMES").split(',')
 password = os.getenv("PASSWORD")
 catcher_URL = os.getenv("CATCHERURL")
 catcher_uses_TLS_str = os.getenv("CATCHERTLS")
-# Convert catcher_uses_TLS_str to boolean
 catcher_uses_TLS = catcher_uses_TLS_str.lower() == "true"
+ssl_certificate = os.getenv("REQUESTS_CA_BUNDLE")
 
 def send_login_request(username, password):
     url = "https://login.microsoft.com/common/oauth2/token"
@@ -43,7 +43,7 @@ def send_login_request(username, password):
             proxies={"http": "http://changeme:changeme@127.0.0.1:1234", "https": "http://changeme:changeme@127.0.0.1:1234"},
             headers=post_headers,
             data=body_params,
-            verify="/thermoptic/ssl/rootCA.crt",
+            verify=ssl_certificate,
             timeout=5
         )
         return response.status_code, response.text
